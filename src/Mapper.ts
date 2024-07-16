@@ -138,6 +138,20 @@ export class Mapper {
     });
   }
 
+  /** It calls 'deleteMapFunctionFor' method in last created Mapper */
+  static deleteMapFunctionFor: Mapper['deleteMapFunctionFor'] = (...args) => {
+    const mapper = Mapper.getOrCreateInstance();
+    return mapper.deleteMapFunctionFor(...args);
+  };
+
+  /** delete map function for specified models if it exists */
+  deleteMapFunctionFor<Source extends object, Destination extends object>(
+    sourceKey: MapFunctionKey<Source>,
+    destinationKey: MapFunctionKey<Destination>
+  ) {
+    this.mapFunctions.get(sourceKey)?.delete(destinationKey);
+  }
+
   /** It calls 'clear' method in last created Mapper */
   static clear: Mapper['clear'] = (...args) => {
     const mapper = Mapper.getOrCreateInstance();

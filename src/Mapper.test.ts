@@ -59,6 +59,16 @@ describe('[class] Mapper', () => {
     expect(mappedObj.date.toISOString()).toBe(dto.date);
   });
 
+  test('[method] deleteMapFunctionFor deletes map function', () => {
+    mapper.addMapFunctions(mapFn1);
+
+    expect(mapper.mapFunctions.get(Class1)?.get(Class2)).toBeDefined();
+
+    mapper.deleteMapFunctionFor(Class1, Class2);
+
+    expect(mapper.mapFunctions.get(Class1)?.get(Class2)).toBeUndefined();
+  });
+
   describe('[method] addProfile', () => {
     test('add 1 profile', () => {
       mapper.addMapFunctions(mapFn1);
