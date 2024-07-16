@@ -1,10 +1,11 @@
+import { test, expect, vi } from 'vitest';
 import { MapFunction } from './Mapper';
 
 class Class1 {}
 class Class2 {}
 
 test('constructor', () => {
-  const fn = jest.fn();
+  const fn = vi.fn();
 
   const result = new MapFunction(Class1, Class2, fn);
 

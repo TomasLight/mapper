@@ -1,5 +1,7 @@
+import { describe, test, expect } from 'vitest';
 import { autoMap } from './autoMap';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const expectType = <T>(valueOfType: T): void => undefined;
 
 describe('use cases', () => {
@@ -51,7 +53,11 @@ describe('use cases', () => {
 
   test('if we can choose, which of properties should be mapped with config', () => {
     const user = userSource();
-    const newUser = autoMap(user, {}, { select: ['id', 'education.high'], copyObjects: true });
+    const newUser = autoMap(
+      user,
+      {},
+      { select: ['id', 'education.high'], copyObjects: true }
+    );
 
     expectType<{
       id: symbol;
@@ -118,7 +124,11 @@ describe('use cases', () => {
       deepObjects,
       {},
       {
-        select: ['level1.level2.bar', 'level1.level2.level3.zax', 'level1.level2.level3.level4'],
+        select: [
+          'level1.level2.bar',
+          'level1.level2.level3.zax',
+          'level1.level2.level3.level4',
+        ],
         copyObjects: true,
         copyArrays: true,
       }
@@ -271,7 +281,11 @@ describe('if object properties are mapped', () => {
     nullProperty: null,
     arrayProperty: array,
   };
-  const destination = autoMap(source, {}, { copyObjects: true, copyArrays: true });
+  const destination = autoMap(
+    source,
+    {},
+    { copyObjects: true, copyArrays: true }
+  );
 
   expectType<{
     nullProperty: null;
@@ -316,7 +330,9 @@ describe('if object properties are mapped', () => {
 
     test('nested objects are fully copied', () => {
       expect(destination.some.stringProperty).toBe(source.some.stringProperty);
-      expect(destination.another.numberProperty).toBe(source.another.numberProperty);
+      expect(destination.another.numberProperty).toBe(
+        source.another.numberProperty
+      );
     });
   });
 });
@@ -376,7 +392,7 @@ test('autoMap throws an error, if array passed as source', () => {
   );
 });
 
-test('symbols in select config will be stringified', () => {
+test('symbols in select config will be ignored', () => {
   const symbol = Symbol('some prop');
   const result = autoMap(
     {
@@ -385,7 +401,7 @@ test('symbols in select config will be stringified', () => {
     },
     {},
     {
-      select: ['name', symbol as any],
+      select: ['name', symbol as unknown as 'name'],
     }
   );
 
@@ -410,7 +426,11 @@ describe('if default value is applied to undefined values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfUndefined: null });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfUndefined: null }
+    );
 
     expectType<{
       numberProperty: number;
@@ -446,7 +466,14 @@ describe('if default value is applied to undefined values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfUndefined: 'default for undefined' as const });
+    const destination = autoMap(
+      source,
+      {},
+      {
+        copyObjects: true,
+        defaultValueIfUndefined: 'default for undefined' as const,
+      }
+    );
 
     expectType<{
       numberProperty: number;
@@ -478,7 +505,11 @@ describe('if default value is applied to undefined values', () => {
     } = {
       prop1: 123,
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfUndefined: 123 as const });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfUndefined: 123 as const }
+    );
 
     expectType<{
       prop1: number;
@@ -503,7 +534,11 @@ describe('if default value is applied to null values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNull: undefined });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfNull: undefined }
+    );
 
     expectType<{
       numberProperty: number;
@@ -539,7 +574,11 @@ describe('if default value is applied to null values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNull: 'default for null' as const });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfNull: 'default for null' as const }
+    );
 
     expectType<{
       numberProperty: number;
@@ -571,7 +610,11 @@ describe('if default value is applied to null values', () => {
     } = {
       prop1: 123,
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNull: 'default for null' as const });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfNull: 'default for null' as const }
+    );
 
     expectType<{
       prop1: number;
@@ -596,7 +639,11 @@ describe('if default value is applied to null and undefined values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNullOrUndefined: null });
+    const destination = autoMap(
+      source,
+      {},
+      { copyObjects: true, defaultValueIfNullOrUndefined: null }
+    );
 
     expectType<{
       numberProperty: number;
@@ -632,7 +679,14 @@ describe('if default value is applied to null and undefined values', () => {
         prop2: '',
       },
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNullOrUndefined: 'default for null or undefined' as const });
+    const destination = autoMap(
+      source,
+      {},
+      {
+        copyObjects: true,
+        defaultValueIfNullOrUndefined: 'default for null or undefined' as const,
+      }
+    );
 
     expectType<{
       numberProperty: number;
@@ -664,7 +718,14 @@ describe('if default value is applied to null and undefined values', () => {
     } = {
       prop1: 123,
     };
-    const destination = autoMap(source, {}, { copyObjects: true, defaultValueIfNullOrUndefined: 'default for null or undefined' as const });
+    const destination = autoMap(
+      source,
+      {},
+      {
+        copyObjects: true,
+        defaultValueIfNullOrUndefined: 'default for null or undefined' as const,
+      }
+    );
 
     expectType<{
       prop1: number;
@@ -679,19 +740,26 @@ describe('if default value is applied to null and undefined values', () => {
 
 test('check if any and unknown types are inferred', () => {
   const a: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     foo?: any;
     age?: number;
     id?: number;
   } = {};
 
-  const b = autoMap(a, {}, {
-    defaultValueIfUndefined: 123,
-  });
+  const b = autoMap(
+    a,
+    {},
+    {
+      defaultValueIfUndefined: 123,
+    }
+  );
 
   expectType<unknown>(b.foo);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expectType<any>(b.foo);
 
   expectType<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     foo?: any;
     age?: number;
     id?: number;

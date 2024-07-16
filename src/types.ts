@@ -1,9 +1,19 @@
-type AbstractConstructor<Instance = any> = abstract new (...args: any[]) => Instance;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AbstractConstructor<Instance = any> = abstract new (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...args: any[]
+) => Instance;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<Instance = any> = new (...args: any[]) => Instance;
 
-type AnyConstructor<Instance extends object = object> = AbstractConstructor<Instance> | Constructor<Instance>;
+type AnyConstructor<Instance extends object = object> =
+  | AbstractConstructor<Instance>
+  | Constructor<Instance>;
 
-export type MapFunctionKey<Instance extends object = object> = AnyConstructor<Instance> | symbol;
+export type MapFunctionKey<Instance extends object = object> =
+  | AnyConstructor<Instance>
+  | symbol;
 
 /**
  * * get keys of primitive types;
@@ -33,10 +43,18 @@ export type DottedKeys<T extends object> = keyof {
           ? key
           : Value extends Array<infer ArrayItem>
             ? ArrayItem extends object
-              ? key | (DottedKeys<ArrayItem> extends string ? `${key}.${number}.${DottedKeys<ArrayItem>}` : key)
+              ?
+                  | key
+                  | (DottedKeys<ArrayItem> extends string
+                      ? `${key}.${number}.${DottedKeys<ArrayItem>}`
+                      : key)
               : key
             : Value extends object
-              ? key | (DottedKeys<Value> extends string ? `${key}.${DottedKeys<Value>}` : key)
+              ?
+                  | key
+                  | (DottedKeys<Value> extends string
+                      ? `${key}.${DottedKeys<Value>}`
+                      : key)
               : key
       : never
     : never]: unknown;
@@ -49,56 +67,85 @@ export type Config<Source extends object> = {
   select?: Array<DottedKeys<Source>>;
   /** this property works only when 'select' property is not passed */
   ignore?: Array<DottedKeys<Source>>;
+
   /** assign this value to each mapped property, whose value is undefined */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValueIfUndefined?: any;
+
   /** assign this value to each mapped property, whose value is null */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValueIfNull?: any;
+
   /** assign this value to each mapped property, whose value is null or undefined */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValueIfNullOrUndefined?: any;
 };
 
-export type Primitives = string | number | boolean | undefined | symbol | bigint | null;
+export type Primitives =
+  | string
+  | number
+  | boolean
+  | undefined
+  | symbol
+  | bigint
+  | null;
 
 export type NotArray = Record<string | symbol | number, unknown>;
 
 /**
  * Introduce strong typing in auto mapping result, based on the passed configuration.
  * */
-export type AutoMapResult<Source extends object, SourceConfig extends Config<Source>> =
-  SourceConfig extends {
-      select: Array<infer SelectedKeys extends DottedKeys<Source>>;
-      ignore: Array<infer IgnoredKeys extends DottedKeys<Source>>;
-    }
-    ? MapFunctionResult<Source, SourceConfig, SelectedKeys, IgnoredKeys>
-    : SourceConfig extends {
+export type AutoMapResult<
+  Source extends object,
+  SourceConfig extends Config<Source>,
+> = SourceConfig extends {
+  select: Array<infer SelectedKeys extends DottedKeys<Source>>;
+  ignore: Array<infer IgnoredKeys extends DottedKeys<Source>>;
+}
+  ? MapFunctionResult<Source, SourceConfig, SelectedKeys, IgnoredKeys>
+  : SourceConfig extends {
         select: Array<infer SelectedKeys extends DottedKeys<Source>>;
       }
-      ? MapFunctionResult<Source, SourceConfig, SelectedKeys, never>
-      : SourceConfig extends {
+    ? MapFunctionResult<Source, SourceConfig, SelectedKeys, never>
+    : SourceConfig extends {
           ignore: Array<infer IgnoredKeys extends DottedKeys<Source>>;
         }
-        ? MapFunctionResult<Source, SourceConfig, keyof Source, IgnoredKeys>
-        : MapFunctionResult<Source, SourceConfig, keyof Source, never>;
+      ? MapFunctionResult<Source, SourceConfig, keyof Source, IgnoredKeys>
+      : MapFunctionResult<Source, SourceConfig, keyof Source, never>;
 
 export type MapFunctionResult<
   Source extends object,
   SourceConfig extends Config<Source>,
   SelectedKeys extends keyof Source,
   IgnoredKeys extends keyof Source,
-> =
-  SourceConfig extends { copyObjects: true }
-    ? SourceConfig extends { copyArrays: true }
-      ? DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys, any>
-      : DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys, Primitives | NotArray>
-    : SourceConfig extends { copyArrays: true }
-      ? DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys, Primitives | Array<any>>
-      : DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys, Primitives>;
+> = SourceConfig extends { copyObjects: true }
+  ? SourceConfig extends { copyArrays: true }
+    ? DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys>
+    : DeepSelect<
+        Source,
+        SourceConfig,
+        SelectedKeys,
+        IgnoredKeys,
+        Primitives | NotArray
+      >
+  : SourceConfig extends { copyArrays: true }
+    ? DeepSelect<
+        Source,
+        SourceConfig,
+        SelectedKeys,
+        IgnoredKeys,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Primitives | Array<any>
+      >
+    : DeepSelect<Source, SourceConfig, SelectedKeys, IgnoredKeys, Primitives>;
 
 export type DeepSelect<
   T extends object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SourceConfig extends Pick<Config<any>, 'defaultValueIfUndefined'>,
   SelectedKeys extends keyof T,
   IgnoredKeys extends keyof T = never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ValueConstraint = any,
 > = {
   [key in string & keyof T as key extends Exclude<SelectedKeys, IgnoredKeys>
@@ -109,51 +156,50 @@ export type DeepSelect<
       ? key extends IgnoredKeys
         ? never
         : key
-      : never]:
-  T[key] extends infer Value ? Value extends T[key]
+      : never]: T[key] extends infer Value
+    ? Value extends T[key]
       ? IsAny<Value> extends true
-        // don't try to infer any type
-        ? Value
-
+        ? // don't try to infer any type
+          Value
         : IsUndefined<Value> extends true
           ? SourceConfig extends {
-              defaultValueIfUndefined: infer DefaultValueForUndefined
+              defaultValueIfUndefined: infer DefaultValueForUndefined;
             }
             ? IsAny<DefaultValueForUndefined> extends true
               ? undefined
               : Value | DefaultValueForUndefined
             : SourceConfig extends {
-                defaultValueIfNullOrUndefined: infer DefaultValue
-              }
+                  defaultValueIfNullOrUndefined: infer DefaultValue;
+                }
               ? IsAny<DefaultValue> extends true
                 ? undefined
                 : Value | DefaultValue
               : undefined
           : IsNull<Value> extends true
             ? SourceConfig extends {
-                defaultValueIfNull: infer DefaultValueForNull
+                defaultValueIfNull: infer DefaultValueForNull;
               }
               ? IsAny<DefaultValueForNull> extends true
                 ? null
                 : Value | DefaultValueForNull
               : SourceConfig extends {
-                  defaultValueIfNullOrUndefined: infer DefaultValue
-                }
+                    defaultValueIfNullOrUndefined: infer DefaultValue;
+                  }
                 ? IsAny<DefaultValue> extends true
                   ? null
                   : Value | DefaultValue
                 : null
-
-            : Value extends Primitives | Array<any>
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              Value extends Primitives | Array<any>
               ? Value
               : Value extends object
                 ? DeepSelect<
-                  Value,
-                  SourceConfig,
-                  NestedDottedKeys<T, SelectedKeys, key, Value>,
-                  NestedDottedKeys<T, IgnoredKeys, key, Value>,
-                  ValueConstraint
-                >
+                    Value,
+                    SourceConfig,
+                    NestedDottedKeys<T, SelectedKeys, key, Value>,
+                    NestedDottedKeys<T, IgnoredKeys, key, Value>,
+                    ValueConstraint
+                  >
                 : never
       : never
     : never;
@@ -163,7 +209,7 @@ export type NestedDottedKeys<
   Source extends object,
   Keys extends keyof Source,
   Key extends keyof Source & string,
-  NestedObject extends Source[Key] & object
+  NestedObject extends Source[Key] & object,
 > = Key extends Keys
   ? DottedKeys<NestedObject>
   : Keys extends `${Key}.${infer key}`
@@ -172,7 +218,6 @@ export type NestedDottedKeys<
       : never
     : never;
 
-
 export type IsUndefined<T> = undefined & T extends never ? false : true;
 export type IsNull<T> = null & T extends never ? false : true;
 
@@ -180,6 +225,7 @@ export type IsAny<T> = unknown extends T ? true : false;
 
 // region test types
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const expectType = <T>(valueOfType: T): void => undefined;
 
 const anyV = null as unknown;
@@ -197,6 +243,7 @@ expectType<undefined>(anyV as undefined & unknown);
 expectType<false>(anyV as undefined extends never ? true : false);
 expectType<false>(anyV as null extends never ? true : false);
 expectType<false>(anyV as Primitives extends never ? true : false);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 expectType<false>(anyV as Array<any> extends never ? true : false);
 expectType<false>(anyV as object extends never ? true : false);
 expectType<false>(anyV as number extends never ? true : false);
@@ -222,6 +269,7 @@ expectType<false>(anyV as IsAny<string>);
 expectType<false>(anyV as IsAny<null>);
 expectType<true>(anyV as IsAny<unknown>);
 expectType<true>(anyV as IsAny<unknown | undefined>);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 expectType<true>(anyV as IsAny<any>);
 
 type MyObj = {
@@ -232,7 +280,8 @@ type MyObj = {
   };
 };
 
-let index = 0; index++;
+let index = 0;
+index++;
 expectType<DottedKeys<MyObj>>('foo.list.0 .name');
 expectType<DottedKeys<MyObj>>(`foo.list.${index}.name`);
 

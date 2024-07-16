@@ -1,6 +1,6 @@
 import { MapFunctionKey } from './types';
 
-export class MapFunction<Source extends object = any, Destination extends object = any> {
+export class MapFunction<Source extends object, Destination extends object> {
   constructor(
     public sourceKey: MapFunctionKey<Source>,
     public destinationKey: MapFunctionKey<Destination>,
@@ -8,6 +8,24 @@ export class MapFunction<Source extends object = any, Destination extends object
   ) {}
 }
 
+/**
+ * The place to define mapping logic for your models
+ * @example
+ * abstract class Foo {
+ *   abstract name: string
+ * }
+ * abstract class Bar {
+ *   abstract title: string
+ * }
+ *
+ * Mapper.addMapFunctions(
+ *   new MapFunction(Foo, Bar, (foo) => ({
+ *     title: foo.name
+ *   }))
+ * )
+ *
+ * const bar = Mapper.map(Foo, Bar, { name: 'foo name' })
+ * */
 export class Mapper {
   constructor() {
     Mapper.lastCreatedInstance = this;
@@ -25,15 +43,35 @@ export class Mapper {
     return new Mapper();
   }
 
-  readonly mapFunctions: Map<MapFunctionKey, Map<MapFunctionKey, MapFunction>>;
+  readonly mapFunctions: Map<
+    MapFunctionKey,
+    Map<MapFunctionKey, MapFunction<object, object>>
+  >;
 
-  static map: Mapper['map'] = (() => {
-    return (...args) => {
-      const mapper = Mapper.getOrCreateInstance();
-      return mapper.map(...args);
-    };
-  })();
+  /** It calls 'map' method in last created Mapper */
+  static map: Mapper['map'] = (...args) => {
+    const mapper = Mapper.getOrCreateInstance();
+    return mapper.map(...args);
+  };
 
+  /**
+   * It calls a map function registered for specified Source and Destination
+   * @example
+   * abstract class Foo {
+   *   abstract name: string
+   * }
+   * abstract class Bar {
+   *   abstract title: string
+   * }
+   *
+   * Mapper.addMapFunctions(
+   *   new MapFunction(Foo, Bar, (foo) => ({
+   *     title: foo.name
+   *   }))
+   * )
+   *
+   * const bar = Mapper.map(Foo, Bar, { name: 'foo name' })
+   * */
   map<Source extends object, Destination extends object>(
     sourceType: MapFunctionKey<Source>,
     destinationType: MapFunctionKey<Destination>,
@@ -52,16 +90,38 @@ export class Mapper {
     return mapFunction.map(sourceModel);
   }
 
-  static addMapFunctions: Mapper['addMapFunctions'] = (() => {
-    return (...args) => {
-      const mapper = Mapper.getOrCreateInstance();
-      return mapper.addMapFunctions(...args);
-    };
-  })();
+  /** It calls 'addMapFunctions' method in last created Mapper */
+  static addMapFunctions: Mapper['addMapFunctions'] = (...args) => {
+    const mapper = Mapper.getOrCreateInstance();
+    return mapper.addMapFunctions(...args);
+  };
 
-  addMapFunctions(...mapFunctions: MapFunction[]) {
+  /**
+   * It registers map functions for specified models.
+   * It will throw an error in case, when you try to a add map function for models, that already have one
+   * @example
+   * abstract class Foo {
+   *   abstract name: string
+   * }
+   * abstract class Bar {
+   *   abstract title: string
+   * }
+   *
+   * Mapper.addMapFunctions(
+   *   new MapFunction(Foo, Bar, (foo) => ({
+   *     title: foo.name
+   *   }))
+   * )
+   *
+   * const bar = Mapper.map(Foo, Bar, { name: 'foo name' })
+   * */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addMapFunctions(...mapFunctions: MapFunction<any, any>[]) {
     mapFunctions.forEach((mapFunction) => {
-      const addedMapFunction = this.findMapFunction(mapFunction.sourceKey, mapFunction.destinationKey);
+      const addedMapFunction = this.findMapFunction(
+        mapFunction.sourceKey,
+        mapFunction.destinationKey
+      );
       if (addedMapFunction) {
         throw Error(
           `Adding mapping failed: the mapping key already added (sourceType: ${mapFunction.sourceKey.toString()}, destinationType: ${mapFunction.destinationKey.toString()})`
@@ -78,7 +138,21 @@ export class Mapper {
     });
   }
 
-  private findMapFunction(sourceKey: MapFunctionKey, destinationKey: MapFunctionKey) {
+  /** It calls 'clear' method in last created Mapper */
+  static clear: Mapper['clear'] = (...args) => {
+    const mapper = Mapper.getOrCreateInstance();
+    return mapper.clear(...args);
+  };
+
+  /** clears all registered map functions */
+  clear() {
+    this.mapFunctions.clear();
+  }
+
+  private findMapFunction(
+    sourceKey: MapFunctionKey,
+    destinationKey: MapFunctionKey
+  ) {
     const sourceMap = this.mapFunctions.get(sourceKey);
     if (!sourceMap || !sourceMap.has(destinationKey)) {
       return undefined;
