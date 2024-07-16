@@ -1,8 +1,9 @@
-import {
-  AutoMapResult, Config, DottedKeys,
-} from './types';
+import { AutoMapResult, Config, DottedKeys } from './types';
 
-export const autoMap = <Source extends object, SourceConfig extends Config<Source>>(
+export const autoMap = <
+  Source extends object,
+  SourceConfig extends Config<Source>,
+>(
   source: Source,
   destination: object,
   config: SourceConfig
@@ -11,38 +12,48 @@ export const autoMap = <Source extends object, SourceConfig extends Config<Sourc
     return source;
   }
   if (Array.isArray(source)) {
-    throw new Error('auto mapping is not available when the source object is an array');
+    throw new Error(
+      'auto mapping is not available when the source object is an array'
+    );
   }
 
   const sourceKeys = Object.keys(source) as (keyof typeof source)[];
-  let filteredKeys: (keyof typeof source)[] = sourceKeys;
+  let filteredKeys = sourceKeys;
   if ('select' in config && config.select && config.select.length > 0) {
     const topLevelSelectedKeys = getFirstLevelOfDottedKeys(config.select);
-    filteredKeys = filteredKeys.filter((selectedKey) => topLevelSelectedKeys.includes(selectedKey as string));
+    filteredKeys = filteredKeys.filter((selectedKey) =>
+      topLevelSelectedKeys.includes(selectedKey as string)
+    );
   }
 
   if ('ignore' in config && config.ignore) {
     const { ignore } = config; // unboxing to prevent appears of undefined or null in the ref
-    filteredKeys = filteredKeys.filter((selectedKey) => !ignore.includes(selectedKey as any));
+    filteredKeys = filteredKeys.filter(
+      (selectedKey) => !ignore.includes(selectedKey as DottedKeys<Source>)
+    );
   }
 
   for (const sourceKey of filteredKeys) {
     const value = source[sourceKey];
     if (Array.isArray(value)) {
       if (config.copyArrays) {
-        (destination as Source)[sourceKey] = [...value] as Source[typeof sourceKey];
+        (destination as Source)[sourceKey] = [
+          ...value,
+        ] as Source[typeof sourceKey];
       }
       continue;
     }
 
     if (value === null) {
       if ('defaultValueIfNull' in config) {
-        (destination as Source)[sourceKey] = config.defaultValueIfNull as Source[typeof sourceKey];
+        (destination as Source)[sourceKey] =
+          config.defaultValueIfNull as Source[typeof sourceKey];
         continue;
       }
 
       if ('defaultValueIfNullOrUndefined' in config) {
-        (destination as Source)[sourceKey] = config.defaultValueIfNullOrUndefined as Source[typeof sourceKey];
+        (destination as Source)[sourceKey] =
+          config.defaultValueIfNullOrUndefined as Source[typeof sourceKey];
         continue;
       }
 
@@ -52,12 +63,14 @@ export const autoMap = <Source extends object, SourceConfig extends Config<Sourc
 
     if (value === undefined) {
       if ('defaultValueIfUndefined' in config) {
-        (destination as Source)[sourceKey] = config.defaultValueIfUndefined as Source[typeof sourceKey];
+        (destination as Source)[sourceKey] =
+          config.defaultValueIfUndefined as Source[typeof sourceKey];
         continue;
       }
 
       if ('defaultValueIfNullOrUndefined' in config) {
-        (destination as Source)[sourceKey] = config.defaultValueIfNullOrUndefined as Source[typeof sourceKey];
+        (destination as Source)[sourceKey] =
+          config.defaultValueIfNullOrUndefined as Source[typeof sourceKey];
         continue;
       }
 
@@ -79,20 +92,31 @@ export const autoMap = <Source extends object, SourceConfig extends Config<Sourc
     };
 
     if ('select' in nextLevelConfig && nextLevelConfig.select) {
-      nextLevelConfig.select = getNextLevelOfDottedKeys(nextLevelConfig.select) as any;
+      nextLevelConfig.select = getNextLevelOfDottedKeys(
+        nextLevelConfig.select
+      ) as unknown as typeof nextLevelConfig.select;
     }
 
     if ('ignore' in nextLevelConfig && nextLevelConfig.ignore) {
-      nextLevelConfig.ignore = getNextLevelOfDottedKeys(nextLevelConfig.ignore) as any;
+      nextLevelConfig.ignore = getNextLevelOfDottedKeys(
+        nextLevelConfig.ignore
+      ) as unknown as typeof nextLevelConfig.select;
     }
 
-    (destination as Source)[sourceKey] = autoMap(value, {}, nextLevelConfig as Config<object>) as any;
+    const destinationKey = sourceKey as keyof typeof destination;
+    destination[destinationKey] = autoMap(
+      value,
+      {},
+      nextLevelConfig as Config<object>
+    ) as unknown as (typeof destination)[typeof destinationKey];
   }
 
   return destination as AutoMapResult<Source, SourceConfig>;
 };
 
-export function getFirstLevelOfDottedKeys<T extends object>(dottedKeys: DottedKeys<T>[]) {
+export function getFirstLevelOfDottedKeys<T extends object>(
+  dottedKeys: DottedKeys<T>[]
+) {
   return dottedKeys.map((dottedKey) => {
     if (typeof dottedKey !== 'string') {
       return dottedKey;
@@ -105,8 +129,12 @@ export function getFirstLevelOfDottedKeys<T extends object>(dottedKeys: DottedKe
   });
 }
 
-export function getNextLevelOfDottedKeys<T extends object>(dottedKeys: DottedKeys<T>[]) {
-  const filteredKeys = dottedKeys.filter((key) => typeof key === 'string' && key.includes('.')) as string[];
+export function getNextLevelOfDottedKeys<T extends object>(
+  dottedKeys: DottedKeys<T>[]
+) {
+  const filteredKeys = dottedKeys.filter(
+    (key) => typeof key === 'string' && key.includes('.')
+  ) as string[];
   return filteredKeys.map((dottedKey) => {
     const firstDotIndex = dottedKey.indexOf('.');
     return dottedKey.substring(firstDotIndex + 1);

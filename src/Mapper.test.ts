@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from 'vitest';
 import { autoMap } from './autoMap';
 import { MapFunction, Mapper } from './Mapper';
 
@@ -17,12 +18,25 @@ class Class2 {
   }
 }
 
-const mapFn1 = new MapFunction(Class1, Class2, (class1) => new Class2(class1.myProp));
-const mapFn2 = new MapFunction(Class2, Class1, (class2) => new Class1(class2.yourProp));
+const mapFn1 = new MapFunction(
+  Class1,
+  Class2,
+  (class1) => new Class2(class1.myProp)
+);
+const mapFn2 = new MapFunction(
+  Class2,
+  Class1,
+  (class2) => new Class1(class2.yourProp)
+);
 
 describe('[class] Mapper', () => {
+  const mapper = new Mapper();
+
+  beforeEach(() => {
+    mapper.clear();
+  });
+
   test('if we can use symbols as map function keys', () => {
-    const mapper = new Mapper();
     const symbol1 = Symbol('test dto');
     const symbol2 = Symbol('mapped object');
 
@@ -47,7 +61,6 @@ describe('[class] Mapper', () => {
 
   describe('[method] addProfile', () => {
     test('add 1 profile', () => {
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFn1);
 
       expect(mapper['mapFunctions'].size).toBe(1);
@@ -55,7 +68,6 @@ describe('[class] Mapper', () => {
     });
 
     test('add 2 profiles', () => {
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFn1);
       mapper.addMapFunctions(mapFn2);
 
@@ -65,8 +77,6 @@ describe('[class] Mapper', () => {
     });
 
     test('if tries to register mapper for already registered token, it should to throw an exception', () => {
-      const mapper = new Mapper();
-
       expect(() => {
         mapper.addMapFunctions(mapFn1, mapFn1);
       }).toThrow();
@@ -75,7 +85,6 @@ describe('[class] Mapper', () => {
 
   describe('[method] map', () => {
     test('class 1 -> class 2', () => {
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFn1);
 
       const obj1 = new Class1('qwe');
@@ -86,7 +95,6 @@ describe('[class] Mapper', () => {
     });
 
     test('class 2 -> class 1', () => {
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFn2);
 
       const obj2 = new Class2('qqq');
@@ -97,7 +105,6 @@ describe('[class] Mapper', () => {
     });
 
     test('if tries to map model without registered profile, it should to throw an exception', () => {
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFn1, mapFn2);
 
       class Class3 {}
@@ -124,7 +131,6 @@ describe('[class] Mapper', () => {
         return model;
       });
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: Dto = {
@@ -151,7 +157,6 @@ describe('[class] Mapper', () => {
         };
       });
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: Dto = {
@@ -180,9 +185,10 @@ describe('[class] Mapper', () => {
         abstract id: symbol;
       }
 
-      const mapFunction = new MapFunction<UserDto, User>(UserDto, User, (dto) => autoMap(dto, {}, {}));
+      const mapFunction = new MapFunction<UserDto, User>(UserDto, User, (dto) =>
+        autoMap(dto, {}, {})
+      );
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: UserDto = {
@@ -215,15 +221,18 @@ describe('[class] Mapper', () => {
         abstract deleted: boolean;
       }
 
-      const mapFunction = new MapFunction<UserDto, User>(UserDto, User, (dto) => {
-        const user = autoMap(dto, {}, {});
-        return {
-          deleted: true,
-          ...user,
-        };
-      });
+      const mapFunction = new MapFunction<UserDto, User>(
+        UserDto,
+        User,
+        (dto) => {
+          const user = autoMap(dto, {}, {});
+          return {
+            deleted: true,
+            ...user,
+          };
+        }
+      );
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: UserDto = {
@@ -254,21 +263,24 @@ describe('[class] Mapper', () => {
         abstract children: { name: string }[];
       }
 
-      const mapFunction = new MapFunction<UserDto, User>(UserDto, User, (dto) => {
-        const user = autoMap(
-          dto,
-          {},
-          {
-            copyArrays: true,
-          }
-        );
-        return {
-          deleted: true,
-          ...user,
-        };
-      });
+      const mapFunction = new MapFunction<UserDto, User>(
+        UserDto,
+        User,
+        (dto) => {
+          const user = autoMap(
+            dto,
+            {},
+            {
+              copyArrays: true,
+            }
+          );
+          return {
+            deleted: true,
+            ...user,
+          };
+        }
+      );
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: UserDto = {
@@ -309,7 +321,6 @@ describe('[class] Mapper', () => {
         )
       );
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: UserDto = {
@@ -350,7 +361,6 @@ describe('[class] Mapper', () => {
         )
       );
 
-      const mapper = new Mapper();
       mapper.addMapFunctions(mapFunction);
 
       const dto: UserDto = {
@@ -378,10 +388,14 @@ describe('static instance access', () => {
     abstract name: string;
   }
 
-  new Mapper();
+  beforeEach(() => {
+    Mapper.clear();
+  });
 
   test('have map function Dto => User', () => {
-    const mapFunction = new MapFunction<Dto, User>(Dto, User, (dto) => autoMap(dto, {}, {}));
+    const mapFunction = new MapFunction<Dto, User>(Dto, User, (dto) =>
+      autoMap(dto, {}, {})
+    );
     Mapper.addMapFunctions(mapFunction);
 
     const dto: Dto = {
@@ -396,8 +410,6 @@ describe('static instance access', () => {
 
   describe('create new Mapper', () => {
     test('does not have previously registered map functions', () => {
-      new Mapper();
-
       expect(() =>
         Mapper.map(Dto, User, {
           name: 'Joe',
@@ -408,7 +420,9 @@ describe('static instance access', () => {
     });
 
     test('map functions registered in new Mapper', () => {
-      const mapFunction = new MapFunction<User, Dto>(User, Dto, (dto) => autoMap(dto, {}, {}));
+      const mapFunction = new MapFunction<User, Dto>(User, Dto, (dto) =>
+        autoMap(dto, {}, {})
+      );
       Mapper.addMapFunctions(mapFunction);
 
       const user: User = {

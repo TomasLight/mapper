@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { autoMap } from './autoMap';
 
 describe('if auto mapping works well', () => {
