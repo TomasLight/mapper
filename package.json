@@ -1,7 +1,7 @@
 {
   "name": "@tomas-light/mapper-js",
   "type": "module",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Mapper for js entities",
   "repository": {
     "type": "git",
