@@ -47,7 +47,6 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "build-instructions": {
-    "name": "nice-web-routes",
     "files": [
       "cjs/**/*",
       "esm/**/*",
