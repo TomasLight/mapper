@@ -1,3 +1,3 @@
-export * from './autoMap';
-export * from './Mapper';
-export * from './types';
+export * from './autoMap.js';
+export * from './Mapper.js';
+export * from './types.js';

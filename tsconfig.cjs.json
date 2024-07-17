@@ -5,5 +5,8 @@
     "moduleResolution": "node",
     "outDir": "dist/cjs",
     "target": "esnext"
-  }
+  },
+  "exclude": [
+    "src/**/*.test.ts"
+  ]
 }

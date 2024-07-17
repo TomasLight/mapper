@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { autoMap } from './autoMap';
+import { autoMap } from './autoMap.js';
 
 describe('if auto mapping works well', () => {
   type Zoo = {

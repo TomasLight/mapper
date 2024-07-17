@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { autoMap } from './autoMap';
-import { MapFunction, Mapper } from './Mapper';
+import { autoMap } from './autoMap.js';
+import { MapFunction, Mapper } from './Mapper.js';
 
 class Class1 {
   myProp: string;

@@ -1,4 +1,4 @@
-import { MapFunctionKey } from './types';
+import { MapFunctionKey } from './types.js';
 
 export class MapFunction<Source extends object, Destination extends object> {
   constructor(

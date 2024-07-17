@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { autoMap } from './autoMap';
+import { autoMap } from './autoMap.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const expectType = <T>(valueOfType: T): void => undefined;

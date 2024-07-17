@@ -1,5 +1,5 @@
 import { test, expect, vi } from 'vitest';
-import { MapFunction } from './Mapper';
+import { MapFunction } from './Mapper.js';
 
 class Class1 {}
 class Class2 {}
